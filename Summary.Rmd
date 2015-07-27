@@ -1,0 +1,36 @@
+---
+title: Analysis of the Relationship between Industry and Skill with LinkedIn Data
+output: html_document
+---
+
+LinkedIn is a business-oriented social network where people build their professional profiles. In this project, the correlation between an individual's industry and his skills was analyzed. The ultimate goal of this project is to build a job recommendation system based on a person's LinkedIn profile. My initial movement here is to infer a person's industry from his skills.   
+
+# 1. Get Data
+The code in "GetOnlineData.R" (https://github.com/phylliswany/LinkedInDataAnalysis/blob/master/GetOnlineData.R) is used to connect to the LinkedIn API. However, LinkedIn has changed the availability of most of their API endpoints. Very limited profiles can be accessed. 
+
+Fortunately, a LinkedIn data set was published in Reddit in the format of JSON files (http://www.reddit.com/r/dataisbeautiful/comments/25qjpz/how_many_employees_are_moving_between_companies_oc/chjvd0g). The code in "GetData.R" (https://github.com/phylliswany/LinkedInDataAnalysis/blob/master/GetData.R) is used to download the compressed data and unzip them into JSON files. The total volume of the data is 4.29GB. 
+
+# 2. Clean Data
+The code in "CleanData.R" (https://github.com/phylliswany/LinkedInDataAnalysis/blob/master/CleanData.R) will read the JSON files and format them to be dataframes. Each dataframe contains 10 columns and following are a few rows taken as an example.    
+```{r, include=FALSE, cache=TRUE}
+library(jsonlite)
+```
+```{r, echo=FALSE, cache=TRUE}
+jsonData <- fromJSON("/Users/yanwang/Desktop/LinkedinData/JsonFile/a-2.json")
+head(jsonData)                   
+```
+Inside the code, the dataset is cleaned by only selecting rows with values assigned to all the following columns, "location", "positions", "industry", "skills" and "education". Following are a few rows as an example of cleaned data. Since only "industry" and "skills" are of primary interests, other irrelevant rows are removed. "Location", "positions", and "educations" are kept for future analysis.   
+```{r, echo=FALSE, cache=TRUE}
+jsonData <- fromJSON("/Users/yanwang/Desktop/LinkedinData/JsonFile/a-2.json")   
+field_name <- names(jsonData)
+index1 <- (jsonData$location != "NULL")
+index2 <- (jsonData$positions != "NULL")
+index3 <- (jsonData$industry != "NULL")
+index4 <- (jsonData$skills != "NULL")
+index5 <- (jsonData$educations != "NULL")
+index <- (index1 & index2 & index3 & index4 & index5)
+selected_data <- jsonData[index, c("location", "positions", "industry", "skills", "educations")] 
+head(selected_data)
+```
+
+# 3.
