@@ -34,7 +34,7 @@ head(selected_data)
 ```
 
 # 3. Select Top Industries
-The code in "AnalyzeIndustry.R" (https://github.com/phylliswany/LinkedInDataAnalysis/blob/master/AnalyzeIndustry.R) selects the top 20 industries which are the most popular among the individuals included in the cleaned data set.
+The code in "AnalyzeIndustry.R" (https://github.com/phylliswany/LinkedInDataAnalysis/blob/master/AnalyzeIndustry.R) selects the top 20 industries which are the most popular among the individuals included in the cleaned data set. Analyasis will be conducted among the top 20 industries limited by the computational resources.
 ```{r, include=FALSE, cache=TRUE}
 library(dplyr)
 library(ggplot2)
@@ -48,3 +48,7 @@ topindustry <- head(industrytable, num)
 q <- qplot(x=industry, y=Freq, data=topindustry, geom="bar", stat="identity", xlab="", ylab="Number of Cases", main=paste("Top", num, "Industries"), fill=I("red"))
 q + theme(axis.text.x = element_text(angle = 45, hjust=1))
 ```
+
+Within expectation, the number of people working in the "Information Technology and Services" is almost 5 times as that of other industries as people in this industry are more likely to create a LinkedIn profile. Though this phenomenon can be built into the relationship model as a pior probability of an individual's "industry", we believe tha adoption rate of LinkedIn will grow, especially in those not information-related industries.
+
+In order to create a balanced data set with an equal number of people in each industry, the code in "" 2000 profiles are randomly selected in each industry 
