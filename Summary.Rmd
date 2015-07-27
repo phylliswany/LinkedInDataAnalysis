@@ -5,13 +5,13 @@ output: html_document
 
 LinkedIn is a business-oriented social network where people build their professional profiles. In this project, the correlation between an individual's industry and his skills was analyzed. The ultimate goal of this project is to build a job recommendation system based on a person's LinkedIn profile. My initial movement here is to infer a person's industry from his skills.   
 
-# 1. Get Data
-The code in "GetOnlineData.R" (https://github.com/phylliswany/LinkedInDataAnalysis/blob/master/GetOnlineData.R) is used to connect to the LinkedIn API. However, LinkedIn has changed the availability of most of their API endpoints. Very limited profiles can be accessed. 
+## 1. Get Data
+The code in [GetOnlineData.R](https://github.com/phylliswany/LinkedInDataAnalysis/blob/master/GetOnlineData.R) is used to connect to the LinkedIn API. However, LinkedIn has changed the availability of most of their API endpoints. Very limited profiles can be accessed. 
 
-Fortunately, a LinkedIn data set was published in Reddit in the format of JSON files (http://www.reddit.com/r/dataisbeautiful/comments/25qjpz/how_many_employees_are_moving_between_companies_oc/chjvd0g). The code in "GetData.R" (https://github.com/phylliswany/LinkedInDataAnalysis/blob/master/GetData.R) is used to download the compressed data and unzip them into JSON files. The total volume of the data is 4.29GB. 
+Fortunately, [a LinkedIn data set](http://www.reddit.com/r/dataisbeautiful/comments/25qjpz/how_many_employees_are_moving_between_companies_oc/chjvd0g) was published in Reddit in the format of JSON files. The code in [GetData.R](https://github.com/phylliswany/LinkedInDataAnalysis/blob/master/GetData.R) is used to download the compressed data and unzip them into JSON files. The total volume of the data is 4.29GB. 
 
-# 2. Clean Data
-The code in "CleanData.R" (https://github.com/phylliswany/LinkedInDataAnalysis/blob/master/CleanData.R) will read the JSON files and format them to be dataframes. Each dataframe contains 10 columns and following are a few rows taken as an example.    
+## 2. Clean Data
+The code in [CleanData.R](https://github.com/phylliswany/LinkedInDataAnalysis/blob/master/CleanData.R) will read the JSON files and format them to be dataframes. Each dataframe contains 10 columns and following are a few rows taken as an example.    
 ```{r, include=FALSE, cache=TRUE}
 library(jsonlite)
 ```
@@ -33,8 +33,8 @@ selected_data <- jsonData[index, c("location", "positions", "industry", "skills"
 head(selected_data)
 ```
 
-# 3. Select Top Industries
-The code in "AnalyzeIndustry.R" (https://github.com/phylliswany/LinkedInDataAnalysis/blob/master/AnalyzeIndustry.R) selects the top 20 industries which are the most popular among the individuals included in the cleaned data set. Analyasis will be conducted among the top 20 industries limited by the computational resources.
+## 3. Select Top Industries
+The code in [AnalyzeIndustry.R](https://github.com/phylliswany/LinkedInDataAnalysis/blob/master/AnalyzeIndustry.R) selects the top 20 industries which are the most popular among the individuals included in the cleaned data set. Analyasis will be conducted among the top 20 industries limited by the computational resources.
 ```{r, include=FALSE, cache=TRUE}
 library(dplyr)
 library(ggplot2)
@@ -51,4 +51,7 @@ q + theme(axis.text.x = element_text(angle = 45, hjust=1))
 
 Within expectation, the number of people working in the "Information Technology and Services" is almost 5 times as that of other industries as people in this industry are more likely to create a LinkedIn profile. Though this phenomenon can be built into the relationship model as a pior probability of an individual's "industry", we believe tha adoption rate of LinkedIn will grow, especially in those not information-related industries.
 
-In order to create a balanced data set with an equal number of people in each industry, the code in "" 2000 profiles are randomly selected in each industry 
+In order to create a balanced data set with an equal number of people in each industry, the code in [ExtractIndustryData.R](https://github.com/phylliswany/LinkedInDataAnalysis/blob/master/ExtractIndustryData.R) randomly samples 2000 profiles in each industry. Furthermore, the code in [SplitData.R](https://github.com/phylliswany/LinkedInDataAnalysis/blob/master/SplitData.R) splits the total 40000 data samples into a training data set and a testing data set by 50% vs. 50%.
+
+## 4. Select Featues in "Skills" to Correlate with "Industry"
+
