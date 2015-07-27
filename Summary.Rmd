@@ -35,6 +35,7 @@ head(selected_data)
 
 ## 3. Select Top Industries
 The code in [AnalyzeIndustry.R](https://github.com/phylliswany/LinkedInDataAnalysis/blob/master/AnalyzeIndustry.R) selects the top 20 industries which are the most popular among the individuals included in the cleaned data set. Analyasis will be conducted among the top 20 industries limited by the computational resources.
+
 ```{r, include=FALSE, cache=TRUE}
 library(dplyr)
 library(ggplot2)
@@ -54,4 +55,46 @@ Within expectation, the number of people working in the "Information Technology 
 In order to create a balanced data set with an equal number of people in each industry, the code in [ExtractIndustryData.R](https://github.com/phylliswany/LinkedInDataAnalysis/blob/master/ExtractIndustryData.R) randomly samples 2000 profiles in each industry. Furthermore, the code in [SplitData.R](https://github.com/phylliswany/LinkedInDataAnalysis/blob/master/SplitData.R) splits the total 40000 data samples into a training data set and a testing data set by 50% vs. 50%.
 
 ## 4. Select Featues in "Skills" to Correlate with "Industry"
+### a. Merge Top Skills in Each Industry as a Feature Vector
+The code in [AnalyzeSkill.R](https://github.com/phylliswany/LinkedInDataAnalysis/blob/master/AnalyzeSkill.R) extracts the top skills in each industry in terms of the frequency a skill appears in the "skills" column among the training data set belonging to the same industry. Following shows the top 20 skills voted by the data samples in the training data set belonging to the industry of "Accounting".
 
+```{r, echo=FALSE, cache=TRUE}
+file_name <- "/Users/yanwang/Desktop/LinkedinData/IndustryAnlysis/skilltraining.Rda"
+load(file_name)
+industrygroup <- split(newdata, newdata$industry) # split the data into industries
+rename <- dplyr::rename
+num <- 20
+CountSkill <- function(dataframe, n){
+  skillgroup <- as.data.frame(table(factor(dataframe$skill)))
+  skillgroup <- arrange(skillgroup, desc(Freq))
+  topskill <- skillgroup[1:n,]
+  topskill <- rename(topskill, skill=Var1)
+}
+topskill <- lapply(industrygroup, CountSkill, n=num)
+index <- 1
+industryname <- names(topskill)
+industry <- industryname[index]
+skilldata <- topskill[[industry]]
+q <- qplot(x=skill, y=Freq, data=skilldata, geom="bar", stat="identity", xlab="", ylab="Number of Cases", main=paste("Top", num, "Skills of", industry), fill=I("red"))
+q + theme(axis.text.x = element_text(angle = 45, hjust=1))
+```
+
+Inevitably, skills across the top industries overlap. One example is "Banking" vs. "Financial Services". Therefore, when the top 20 skills of each industry are aggregated into a singla feature vector, the length is 227 much shorter than 400 if no overlap occurs.
+```{r, include=FALSE, cache=TRUE}
+library(reshape2)
+```
+```{r, echo=FALSE, cache=TRUE}
+options(warn=-1)
+file_name <- "/Users/yanwang/Desktop/LinkedinData/IndustryAnlysis/industryfeature_20.Rda"
+load(file_name)
+newdata <- lapply(industryfeature, function(data) data.frame(as.list(setNames(data$Freq, data$skill))))
+data <- do.call("rbind", newdata)
+data1 <- as.data.frame(t(data))
+data2 <- cbind(skill=industryfeature$Accounting$skill, data1)
+data3 <- data2[10:20,]
+data.m <- melt(data3, id.vars="skill")
+ggplot(data.m, aes(x=skill , y=value, fill=variable)) + geom_bar(stat='identity') + xlab("Skills") + ylab("Number of Cases") + theme(axis.text.x = element_text(angle = 45, hjust=1))
+```
+
+### b. Merge Top Keywords in Each Industry as a Feature Vector
+However, unlike "industry", "skills" can be input in free styles, which leads to redundancy of the feature vector. For example, "accounting" and "financial accounting" selected as two separate features refer to pretty much the same skill. Therefore, instead of using skills, keywords are extracted from all the skills by breaking phrases into words. 

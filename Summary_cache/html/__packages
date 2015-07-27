@@ -2,3 +2,4 @@ base
 jsonlite
 ggplot2
 dplyr
+reshape2
