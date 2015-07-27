@@ -33,4 +33,5 @@ selected_data <- jsonData[index, c("location", "positions", "industry", "skills"
 head(selected_data)
 ```
 
-# 3.
+# 3. Select Top Industries
+The code in "AnalyzeIndustry.R" ()
