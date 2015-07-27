@@ -1,5 +1,5 @@
 library(dplyr)
-library(qqplot)
+library(ggplot2)
 
 # count the number of cases in each industry
 file_list <- list.files(path="/Users/yanwang/Desktop/LinkedinData/CleanedData", pattern=".*Rda")

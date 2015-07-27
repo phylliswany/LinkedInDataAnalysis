@@ -34,4 +34,17 @@ head(selected_data)
 ```
 
 # 3. Select Top Industries
-The code in "AnalyzeIndustry.R" ()
+The code in "AnalyzeIndustry.R" (https://github.com/phylliswany/LinkedInDataAnalysis/blob/master/AnalyzeIndustry.R) selects the top 20 industries which are the most popular among the individuals included in the cleaned data set.
+```{r, include=FALSE, cache=TRUE}
+library(dplyr)
+library(ggplot2)
+```
+```{r, echo=FALSE, cache=TRUE}
+file_name <- "/Users/yanwang/Desktop/LinkedinData/IndustryAnlysis/industry.Rda"
+load(file_name)
+num <- 20
+industrytable <- arrange(industrytable, desc(Freq))
+topindustry <- head(industrytable, num)
+q <- qplot(x=industry, y=Freq, data=topindustry, geom="bar", stat="identity", xlab="", ylab="Number of Cases", main=paste("Top", num, "Industries"), fill=I("red"))
+q + theme(axis.text.x = element_text(angle = 45, hjust=1))
+```
