@@ -96,5 +96,51 @@ data.m <- melt(data3, id.vars="skill")
 ggplot(data.m, aes(x=skill , y=value, fill=variable)) + geom_bar(stat='identity') + xlab("Skills") + ylab("Number of Cases") + theme(axis.text.x = element_text(angle = 45, hjust=1))
 ```
 
+Here binary values are assigned to each element of the feature vector where "1" indicates the skill is required (ranked as the top skills for the industry observed on the training data set) and "0" indicates the skill may be irrelevant. 
+
 ### b. Merge Top Keywords in Each Industry as a Feature Vector
-However, unlike "industry", "skills" can be input in free styles, which leads to redundancy of the feature vector. For example, "accounting" and "financial accounting" selected as two separate features refer to pretty much the same skill. Therefore, instead of using skills, keywords are extracted from all the skills by breaking phrases into words. 
+However, unlike "industry", "skills" can be input in free styles, which leads to redundancy of the feature vector. For example, "accounting" and "financial accounting" selected as two separate features refer to pretty much the same skill. Therefore, instead of using skills, keywords are extracted from all the skills by breaking phrases into words.
+
+The code in [AnalyzeKeyword.R](https://github.com/phylliswany/LinkedInDataAnalysis/blob/master/AnalyzeKeyword.R) selects the top keywords in each industry. Following shows the top 20 keywords appearing in the column of "skills" from the samples belonging to the industry of "Accounting" in the training data set.
+
+```{r, echo=FALSE, cache=TRUE}
+file_name <- "/Users/yanwang/Desktop/LinkedinData/IndustryAnlysis/keywordtraining.Rda"
+load(file_name)
+newdata <- newdata[-which(newdata$keyword == ""),] # remove the space in the keyword list
+industrygroup <- split(newdata, newdata$industry) # split the data into industries
+rename <- dplyr::rename
+mutate <- dplyr::mutate
+num <- 20
+CountKeyword <- function(dataframe, n){
+  skillgroup <- as.data.frame(table(factor(dataframe$keyword)))
+  skillgroup <- arrange(skillgroup, desc(Freq))
+  topskill <- skillgroup[1:n,]
+  topskill <- rename(topskill, keyword=Var1)
+
+}
+topkeyword <- lapply(industrygroup, CountKeyword, n=num)
+topkeyword1 <- topkeyword
+index <- 1
+industryname <- names(topkeyword1)
+industry <- industryname[index]
+keyworddata <- topkeyword1[[industry]]
+q <- qplot(x=keyword, y=Freq, data=keyworddata, geom="bar", stat="identity", xlab="", ylab="Number of Cases", main=paste("Top", num, "Keywords of", industry), fill=I("red"))
+q + theme(axis.text.x = element_text(angle = 45, hjust=1))
+```
+
+But some keywords like "management", "development" and etc. are widely used and not specific enough to correlate with any specific industries. To include this kind of words in the feature vetor is not very meaningful. So before aggregating the top 20 keywords in the feature vector, the common keywords shared by all the top 20 industries are removed.
+
+Instead of using binary values, each keyword is weighted according to the frequency appearing in the column of "skills" within the samples belonging to the same industry in the training data set. The weight is further normalized by being divided by the sum of the frequencies of all the top keywords in the industry. Following shows part of the feature vector to model the industry of "accounting". Note that the total weight for each feature vector characterizing a specific indusry should always be 1.
+
+```{r, echo=FALSE, cache=TRUE}
+file_name <- "/Users/yanwang/Desktop/LinkedinData/IndustryAnlysis/industryfeaturekeyword_20.Rda"
+load(file_name)
+example <- as.data.frame(industryfeature$Accounting)
+example <- example[1:20,]
+q <- qplot(x=keyword, y=weight, data=example, geom="bar", stat="identity", xlab="Subset of the Keywords", ylab="Weight", main="Feature Vector of Accounting", fill=I("red"))
+q + theme(axis.text.x = element_text(angle = 45, hjust=1))
+```
+
+## 5. Correlate "Industry" with "Skills"
+### a. Item based Recommendation System
+To build an item based recommendation system, the same feature vector that characterizes the individual industries is used to characterize a person. But binary values are assigned no matter each element in the feature vector presents skills or keywords. The cosine distance between the feature vector of the person and that of each industry is calcualted. The industry resulting in the largest cosin distance is recommended. The recommendation system is tested on the training data set and following shows the accuracy of using either skills or keywords.
