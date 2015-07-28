@@ -152,5 +152,12 @@ ggplot(data=result, aes(x=Feature.Length, y=Accuracy, group=Feature, colour=Feat
 
 Note that the feature length refers to the number of top skills or keywords extracted from each industry. Since there are overlaps across the 20 industries, the actual length of the feature vector cannot be simply calculated by multiplying by 20. In addition, "keyword" outperforms "skill" in all the ranges of the feature length and the accuracy is still increasing with the increased number of features.
 
-### B. Supervised Learning Algorithms  
-Supervised learning algorithms are then applied to the trainining data set without modeling the individual industries beforehand. 
+### b. Supervised Learning Algorithms  
+Supervised learning algorithms are then applied to the trainining data set without modeling the individual industries beforehand. The code in [IndustryClassifier.R](https://github.com/phylliswany/LinkedInDataAnalysis/blob/master/IndustryClassifier.R) tries different supervised learning algorithms on the training data set and following shows the accuracy by testing on the training data set itself when setting the length of the feature vector to be 20.
+
+```{r, echo=FALSE, cache=TRUE}
+result <- data.frame(Algorithm=c("Tree", "Naive Bayes", "Linear SVM", "SVM with RBF Kernal"), Accuracy=c(0.2548, 0.1070, 0.5216, 0.5154))
+qplot(x=Algorithm, y=Accuracy, data=result, geom="bar", stat="identity", fill=I("red"))
+```
+
+Among the four supervised learning algorithms, the linear support vector machine has the best performance. So feature vectors with a range of different lengths are fed into the algorithm for performance evaluation.
