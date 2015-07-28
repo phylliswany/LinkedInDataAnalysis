@@ -143,4 +143,14 @@ q + theme(axis.text.x = element_text(angle = 45, hjust=1))
 
 ## 5. Correlate "Industry" with "Skills"
 ### a. Item based Recommendation System
-To build an item based recommendation system, the same feature vector that characterizes the individual industries is used to characterize a person. But binary values are assigned no matter each element in the feature vector presents skills or keywords. The cosine distance between the feature vector of the person and that of each industry is calcualted. The industry resulting in the largest cosin distance is recommended. The recommendation system is tested on the training data set and following shows the accuracy of using either skills or keywords.
+To build an item based recommendation system, the same feature vector that characterizes the individual industries is used to characterize a person. But binary values are assigned no matter each element in the feature vector presents skills or keywords. The cosine distance between the feature vector of the person and that of each industry is calcualted. The industry resulting in the largest cosin distance is recommended. The code in [ClassifySubject.R](https://github.com/phylliswany/LinkedInDataAnalysis/blob/master/ClassifySubject.R) tests the recommendation system on the training data set and following shows the accuracy of using either skills or keywords.
+
+```{r, echo=FALSE, cache=TRUE}
+result <- data.frame(Feature.Length=c(20, 40, 80, 160, 320, 20, 40, 80, 160, 320), Feature=c("Skill", "Skill", "Skill", "Skill", "Skill", "Keyword","Keyword", "Keyword", "Keyword", "Keyword"), Accuracy=c(0.3244, 0.3534, 0.3635, 0.3581, 0.3418, 0.4242, 0.4550, 0.4780, 0.4866, 0.4947))
+ggplot(data=result, aes(x=Feature.Length, y=Accuracy, group=Feature, colour=Feature)) + geom_line() + geom_point() + xlab("Feature Length")
+```
+
+Note that the feature length refers to the number of top skills or keywords extracted from each industry. Since there are overlaps across the 20 industries, the actual length of the feature vector cannot be simply calculated by multiplying by 20. In addition, "keyword" outperforms "skill" in all the ranges of the feature length and the accuracy is still increasing with the increased number of features.
+
+### B. Supervised Learning Algorithms  
+Supervised learning algorithms are then applied to the trainining data set without modeling the individual industries beforehand. 
