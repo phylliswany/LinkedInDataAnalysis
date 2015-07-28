@@ -160,4 +160,9 @@ result <- data.frame(Algorithm=c("Tree", "Naive Bayes", "Linear SVM", "SVM with 
 qplot(x=Algorithm, y=Accuracy, data=result, geom="bar", stat="identity", fill=I("red"))
 ```
 
-Among the four supervised learning algorithms, the linear support vector machine has the best performance. So feature vectors with a range of different lengths are fed into the algorithm for performance evaluation.
+Among the four supervised learning algorithms, the linear support vector machine has the best performance. So feature vectors with a range of different lengths are fed into the algorithm for performance evaluation with the training data set.
+
+```{r, echo=FALSE, cache=TRUE}
+result <- data.frame(Feature.Length=c(20, 40, 80, 160, 320), Feature=c("Keyword","Keyword", "Keyword", "Keyword", "Keyword"), Accuracy=c(0.5216, 0.5841, 0.7054, 0.8423, 0.8878))
+ggplot(data=result, aes(x=Feature.Length, y=Accuracy, group=Feature, colour=Feature)) + geom_line() + geom_point() + xlab("Feature Length")
+```
