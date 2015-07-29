@@ -3,3 +3,5 @@ jsonlite
 ggplot2
 dplyr
 reshape2
+lattice
+caret

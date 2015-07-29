@@ -168,10 +168,48 @@ ggplot(data=result, aes(x=Feature.Length, y=Accuracy, group=Feature, colour=Feat
 ```
 
 ## 6. Performance Evaluation with the Testing Data Set
-Evidently keyword based features outperform skill based features. So only keyword based features are used to analyze the testing data set. Both item based recommendation system (IRS) and linear support vector machine (SVM) are applied to infer an individual's working industry. Following shows the result.
+Evidently keyword based features outperform skill based features. So only keyword based features are used to analyze the testing data set. Both item based recommendation system ([ClassifyTesting.R](https://github.com/phylliswany/LinkedInDataAnalysis/blob/master/ClassifyTesting.R)) and linear support vector machine ([TestClassifier.R](https://github.com/phylliswany/LinkedInDataAnalysis/blob/master/TestClassifier.R)) are applied to infer an individual's working industry. Following shows the result.
 
 ```{r, echo=FALSE, cache=TRUE}
 result <- data.frame(Feature.Length=c(20, 40, 80, 160, 320, 20, 40, 80, 160, 320), Algorithm=c("IRS", "IRS", "IRS", "IRS", "IRS", "SVM","SVM", "SVM", "SVM", "SVM"), Accuracy=c(0.4242, 0.455, 0.478, 0.4866, 0.4947, 0.4689, 0.4728, 0.4622, 0.4336, 0.4176))
 ggplot(data=result, aes(x=Feature.Length, y=Accuracy, group=Algorithm, colour=Algorithm)) + geom_line() + geom_point() + xlab("Feature Length")
 ```
 
+Though linear SVM works better in the training data set, especially when increasing the dimension of the feature vector. However, it presents overfitting problem as the performance deteriorates with the testing data set. On the other hand, item based recommendation system  presents stability across both the training data set and the testing data set. Moreover, the performance increases with the increased dimension of the feature vector and is expected to perform better with a longer feature vector. One explanation here is a short feature vector may fail to include the keywords included in an individual's profile. Therefore, the longer the feature vetor, the larger the possibility that an individual's keywords will be included.  
+```{r, include=FALSE, cache=TRUE}
+library(caret)
+```
+```{r, echo=FALSE, cache=TRUE}
+name_list <- c("20_0.4212", "40_0.4477", "80_0.4672", "160_0.4779", "320_0.4832")
+data <- NULL
+for (i in 1:length(name_list)){
+  file_name <- paste("/Users/yanwang/Desktop/LinkedinData/IndustryAnlysis/resulttestingkeyword_", name_list[i], ".Rda", sep="")
+  load(file_name)
+  result$prediction <- droplevels(result$prediction)
+  result$truth <- droplevels(result$truth)
+  levels(result$truth) <- c(levels(result$truth), "Unknown")
+  x <- confusionMatrix(result$prediction, result$truth)
+  data <- c(data, sum(x$table[21,]))
+  }
+result <- data.frame(Feature.Length=c(20, 40, 80, 160, 320), Freq=data)
+ggplot(data=result, aes(x=Feature.Length, y=Freq, colour="red")) + geom_line() + geom_point() + xlab("Feature Length") + guides(colour=FALSE) + ggtitle("Number of Unknown Cases")
+```
+
+However the number of unknown cases increases a little bit when the dimension of the feature vector increases from 160 to 320. It is because more common words are removed in this case. But since the accuracy is still increasing, we still like longer feature vectors.
+
+## 7. Industry Group
+The accuracy of 0.4832 of item based reconmmendation system with 320 keywords describing each industry is not satisfying. To diagnose the problem, we plot the confusion matrix of the classification result.
+
+```{r, echo=FALSE, cache=TRUE}
+options(warn=-1)
+file_name <- "/Users/yanwang/Desktop/LinkedinData/IndustryAnlysis/resulttestingkeyword_320_0.4832.Rda"
+load(file_name)
+result$prediction <- droplevels(result$prediction)
+result$truth <- droplevels(result$truth)
+levels(result$truth) <- c(levels(result$truth), "Unknown")
+x <- confusionMatrix(result$prediction, result$truth)
+y <- as.data.frame(x$table)
+ggplot(y) + geom_tile(aes(x=Reference, y=Prediction, fill=Freq)) + theme(axis.text.x = element_text(angle = 45, hjust=1))
+```
+
+Here we want all the bright colors to concentrate around the diagonal. But we observe some bright squares off the diagonal. For example, "banking"" has a relatively large proportion to be classified as "financial services". This makes a lot of sense as these two areas require quite similar skills and people from one industry will be easily switched to the other. Another example is between "computer software" and "information technology and services". 
