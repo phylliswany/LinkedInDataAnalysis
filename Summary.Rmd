@@ -166,3 +166,12 @@ Among the four supervised learning algorithms, the linear support vector machine
 result <- data.frame(Feature.Length=c(20, 40, 80, 160, 320), Feature=c("Keyword","Keyword", "Keyword", "Keyword", "Keyword"), Accuracy=c(0.5216, 0.5841, 0.7054, 0.8423, 0.8878))
 ggplot(data=result, aes(x=Feature.Length, y=Accuracy, group=Feature, colour=Feature)) + geom_line() + geom_point() + xlab("Feature Length")
 ```
+
+## 6. Performance Evaluation with the Testing Data Set
+Evidently keyword based features outperform skill based features. So only keyword based features are used to analyze the testing data set. Both item based recommendation system (IRS) and linear support vector machine (SVM) are applied to infer an individual's working industry. Following shows the result.
+
+```{r, echo=FALSE, cache=TRUE}
+result <- data.frame(Feature.Length=c(20, 40, 80, 160, 320, 20, 40, 80, 160, 320), Algorithm=c("IRS", "IRS", "IRS", "IRS", "IRS", "SVM","SVM", "SVM", "SVM", "SVM"), Accuracy=c(0.4242, 0.455, 0.478, 0.4866, 0.4947, 0.4689, 0.4728, 0.4622, 0.4336, 0.4176))
+ggplot(data=result, aes(x=Feature.Length, y=Accuracy, group=Algorithm, colour=Algorithm)) + geom_line() + geom_point() + xlab("Feature Length")
+```
+
