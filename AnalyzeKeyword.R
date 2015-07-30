@@ -1,5 +1,6 @@
 library(dplyr)
 library(ggplot2)
+library(caret)
 source("/Users/yanwang/Dropbox/InsightDataScience/UnlistKeyword.R")
 source("/Users/yanwang/Dropbox/InsightDataScience/ClassifySubjectWithKeyword.R")
 
@@ -20,7 +21,7 @@ industrygroup <- split(newdata, newdata$industry) # split the data into industri
 # pick the top keywords for each industry
 rename <- dplyr::rename
 mutate <- dplyr::mutate
-num <- 640
+num <- 20
 CountKeyword <- function(dataframe, n){
   skillgroup <- as.data.frame(table(factor(dataframe$keyword)))
   skillgroup <- arrange(skillgroup, desc(Freq))
@@ -73,7 +74,7 @@ file_name <- "/Users/yanwang/Desktop/LinkedinData/IndustryAnlysis/industryfeatur
 save(industryfeature, file=file_name)
 
 # classify the subject in the training data
-result <- ClassifySubjectWithKeyword(newdata, "training")
+result <- ClassifySubjectWithKeyword(newdata, "training", num)
 confusionMatrix(result$prediction, result$truth)
 confusionMatrix(result$prediction1, result$truth)
 

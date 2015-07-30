@@ -1,11 +1,11 @@
-ClassifySubjectWithKeyword <- function(data6, datatype){
+ClassifySubjectWithKeyword <- function(data6, datatype, num){
   
   # load the top keywords of the top industries
-  file_name <- "/Users/yanwang/Desktop/LinkedinData/IndustryAnlysis/keyword.Rda"
+  file_name <- paste("/Users/yanwang/Desktop/LinkedinData/IndustryAnlysis/keyword_", num,".Rda", sep="")
   load(file_name)
   
   # load the feature vector for each industry
-  file_name <- "/Users/yanwang/Desktop/LinkedinData/IndustryAnlysis/industryfeaturekeyword.Rda"
+  file_name <- paste("/Users/yanwang/Desktop/LinkedinData/IndustryAnlysis/industryfeaturekeyword_", num, ".Rda", sep="")
   load(file_name)
   
   data6 <- split(newdata, newdata$ID) # split the data by ID

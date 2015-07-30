@@ -11,7 +11,7 @@ The code in [GetOnlineData.R](https://github.com/phylliswany/LinkedInDataAnalysi
 Fortunately, [a LinkedIn data set](http://www.reddit.com/r/dataisbeautiful/comments/25qjpz/how_many_employees_are_moving_between_companies_oc/chjvd0g) was published in Reddit in the format of JSON files. The code in [GetData.R](https://github.com/phylliswany/LinkedInDataAnalysis/blob/master/GetData.R) is used to download the compressed data and unzip them into JSON files. The total volume of the data is 4.29GB. 
 
 ## 2. Clean Data
-The code in [CleanData.R](https://github.com/phylliswany/LinkedInDataAnalysis/blob/master/CleanData.R) will read the JSON files and format them to be dataframes. Each dataframe contains 10 columns and following are a few rows taken as an example.    
+The code in [CleanData.R](https://github.com/phylliswany/LinkedInDataAnalysis/blob/master/CleanData.R) reads the JSON files and formats them to be dataframes. Each dataframe contains 10 columns and following are a few rows taken as an example.
 ```{r, include=FALSE, cache=TRUE}
 library(jsonlite)
 ```
@@ -50,13 +50,13 @@ q <- qplot(x=industry, y=Freq, data=topindustry, geom="bar", stat="identity", xl
 q + theme(axis.text.x = element_text(angle = 45, hjust=1))
 ```
 
-Within expectation, the number of people working in the "Information Technology and Services" is almost 5 times as that of other industries as people in this industry are more likely to create a LinkedIn profile. Though this phenomenon can be built into the relationship model as a pior probability of an individual's "industry", we believe tha adoption rate of LinkedIn will grow, especially in those not information-related industries.
+Within expectation, the number of people working in the "Information Technology and Services" is almost 5 times as that of other industries as people in this industry are more likely to create a LinkedIn profile. Though this phenomenon can be built into the model as a pior probability of an individual's "industry", we believe tha adoption rate of LinkedIn will grow, especially in those not information-related industries.
 
 In order to create a balanced data set with an equal number of people in each industry, the code in [ExtractIndustryData.R](https://github.com/phylliswany/LinkedInDataAnalysis/blob/master/ExtractIndustryData.R) randomly samples 2000 profiles in each industry. Furthermore, the code in [SplitData.R](https://github.com/phylliswany/LinkedInDataAnalysis/blob/master/SplitData.R) splits the total 40000 data samples into a training data set and a testing data set by 50% vs. 50%.
 
 ## 4. Select Featues in "Skills" to Correlate with "Industry"
 ### a. Merge Top Skills in Each Industry as a Feature Vector
-The code in [AnalyzeSkill.R](https://github.com/phylliswany/LinkedInDataAnalysis/blob/master/AnalyzeSkill.R) extracts the top skills in each industry in terms of the frequency a skill appears in the "skills" column among the training data set belonging to the same industry. Following shows the top 20 skills voted by the data samples in the training data set belonging to the industry of "Accounting".
+The code in [AnalyzeSkill.R](https://github.com/phylliswany/LinkedInDataAnalysis/blob/master/AnalyzeSkill.R) extracts the top skills in each industry in terms of the frequency a skill appearing in the "skills" column among the training data set belonging to the same industry. Following are the top 20 skills voted by the data samples in the training data set belonging to the industry of "Accounting".
 
 ```{r, echo=FALSE, cache=TRUE}
 file_name <- "/Users/yanwang/Desktop/LinkedinData/IndustryAnlysis/skilltraining.Rda"
@@ -79,7 +79,9 @@ q <- qplot(x=skill, y=Freq, data=skilldata, geom="bar", stat="identity", xlab=""
 q + theme(axis.text.x = element_text(angle = 45, hjust=1))
 ```
 
-Inevitably, skills across the top industries overlap. One example is "Banking" vs. "Financial Services". Therefore, when the top 20 skills of each industry are aggregated into a singla feature vector, the length is 227 much shorter than 400 if no overlap occurs.
+Inevitably, skills across the top industries overlap. One example is "Banking" vs. "Financial Services". Therefore, when the top 20 skills of each industry are aggregated into a singla feature vector, the dimension is 227 much shorter than 400 if no overlap occurs. Following 
+are 10 example skills and their relationships to the 20 industries.
+
 ```{r, include=FALSE, cache=TRUE}
 library(reshape2)
 ```
@@ -91,9 +93,10 @@ newdata <- lapply(industryfeature, function(data) data.frame(as.list(setNames(da
 data <- do.call("rbind", newdata)
 data1 <- as.data.frame(t(data))
 data2 <- cbind(skill=industryfeature$Accounting$skill, data1)
-data3 <- data2[10:20,]
+data3 <- data2[10:19,]
 data.m <- melt(data3, id.vars="skill")
-ggplot(data.m, aes(x=skill , y=value, fill=variable)) + geom_bar(stat='identity') + xlab("Skills") + ylab("Number of Cases") + theme(axis.text.x = element_text(angle = 45, hjust=1))
+data.m <- rename(data.m, Industry=variable)
+ggplot(data.m, aes(x=skill , y=value, fill=Industry)) + geom_bar(stat='identity') + xlab("Skills") + ylab("Number of Cases") + theme(axis.text.x = element_text(angle = 45, hjust=1)) + ggtitle("Overlap of Skills across the 20 Industries")
 ```
 
 Here binary values are assigned to each element of the feature vector where "1" indicates the skill is required (ranked as the top skills for the industry observed on the training data set) and "0" indicates the skill may be irrelevant. 
@@ -101,7 +104,7 @@ Here binary values are assigned to each element of the feature vector where "1" 
 ### b. Merge Top Keywords in Each Industry as a Feature Vector
 However, unlike "industry", "skills" can be input in free styles, which leads to redundancy of the feature vector. For example, "accounting" and "financial accounting" selected as two separate features refer to pretty much the same skill. Therefore, instead of using skills, keywords are extracted from all the skills by breaking phrases into words.
 
-The code in [AnalyzeKeyword.R](https://github.com/phylliswany/LinkedInDataAnalysis/blob/master/AnalyzeKeyword.R) selects the top keywords in each industry. Following shows the top 20 keywords appearing in the column of "skills" from the samples belonging to the industry of "Accounting" in the training data set.
+The code in [AnalyzeKeyword.R](https://github.com/phylliswany/LinkedInDataAnalysis/blob/master/AnalyzeKeyword.R) selects the top keywords in each industry. Following are the top 20 keywords appearing in the column of "skills" from the samples belonging to the industry of "Accounting" in the training data set.
 
 ```{r, echo=FALSE, cache=TRUE}
 file_name <- "/Users/yanwang/Desktop/LinkedinData/IndustryAnlysis/keywordtraining.Rda"
@@ -116,7 +119,6 @@ CountKeyword <- function(dataframe, n){
   skillgroup <- arrange(skillgroup, desc(Freq))
   topskill <- skillgroup[1:n,]
   topskill <- rename(topskill, keyword=Var1)
-
 }
 topkeyword <- lapply(industrygroup, CountKeyword, n=num)
 topkeyword1 <- topkeyword
@@ -130,7 +132,7 @@ q + theme(axis.text.x = element_text(angle = 45, hjust=1))
 
 But some keywords like "management", "development" and etc. are widely used and not specific enough to correlate with any specific industries. To include this kind of words in the feature vetor is not very meaningful. So before aggregating the top 20 keywords in the feature vector, the common keywords shared by all the top 20 industries are removed.
 
-Instead of using binary values, each keyword is weighted according to the frequency appearing in the column of "skills" within the samples belonging to the same industry in the training data set. The weight is further normalized by being divided by the sum of the frequencies of all the top keywords in the industry. Following shows part of the feature vector to model the industry of "accounting". Note that the total weight for each feature vector characterizing a specific indusry should always be 1.
+Instead of using binary values, each keyword is weighted according to the frequency appearing in the column of "skills" within the samples belonging to the same industry in the training data set. The weight is further normalized by being divided by the sum of the frequencies of all the top keywords in the industry. Following is part of the feature vector to model the industry of "Accounting". Note that the total weight for each feature vector characterizing a specific indusry should always be 1.
 
 ```{r, echo=FALSE, cache=TRUE}
 file_name <- "/Users/yanwang/Desktop/LinkedinData/IndustryAnlysis/industryfeaturekeyword_20.Rda"
@@ -147,7 +149,7 @@ To build an item based recommendation system, the same feature vector that chara
 
 ```{r, echo=FALSE, cache=TRUE}
 result <- data.frame(Feature.Length=c(20, 40, 80, 160, 320, 20, 40, 80, 160, 320), Feature=c("Skill", "Skill", "Skill", "Skill", "Skill", "Keyword","Keyword", "Keyword", "Keyword", "Keyword"), Accuracy=c(0.3244, 0.3534, 0.3635, 0.3581, 0.3418, 0.4242, 0.4550, 0.4780, 0.4866, 0.4947))
-ggplot(data=result, aes(x=Feature.Length, y=Accuracy, group=Feature, colour=Feature)) + geom_line() + geom_point() + xlab("Feature Length")
+ggplot(data=result, aes(x=Feature.Length, y=Accuracy, group=Feature, colour=Feature)) + geom_line() + geom_point() + xlab("Feature Length") + ggtitle("Performance of Item based Recommendation System")
 ```
 
 Note that the feature length refers to the number of top skills or keywords extracted from each industry. Since there are overlaps across the 20 industries, the actual length of the feature vector cannot be simply calculated by multiplying by 20. In addition, "keyword" outperforms "skill" in all the ranges of the feature length and the accuracy is still increasing with the increased number of features.
@@ -157,25 +159,26 @@ Supervised learning algorithms are then applied to the trainining data set witho
 
 ```{r, echo=FALSE, cache=TRUE}
 result <- data.frame(Algorithm=c("Tree", "Naive Bayes", "Linear SVM", "SVM with RBF Kernal"), Accuracy=c(0.2548, 0.1070, 0.5216, 0.5154))
-qplot(x=Algorithm, y=Accuracy, data=result, geom="bar", stat="identity", fill=I("red"))
+qplot(x=Algorithm, y=Accuracy, data=result, geom="bar", stat="identity", fill=I("red"), main="Performance Evaluation of Supervised Learning Algorithms")
 ```
 
 Among the four supervised learning algorithms, the linear support vector machine has the best performance. So feature vectors with a range of different lengths are fed into the algorithm for performance evaluation with the training data set.
 
 ```{r, echo=FALSE, cache=TRUE}
 result <- data.frame(Feature.Length=c(20, 40, 80, 160, 320), Feature=c("Keyword","Keyword", "Keyword", "Keyword", "Keyword"), Accuracy=c(0.5216, 0.5841, 0.7054, 0.8423, 0.8878))
-ggplot(data=result, aes(x=Feature.Length, y=Accuracy, group=Feature, colour=Feature)) + geom_line() + geom_point() + xlab("Feature Length")
+ggplot(data=result, aes(x=Feature.Length, y=Accuracy, colour="red")) + geom_line() + geom_point() + xlab("Feature Length") + guides(colour=FALSE) + ggtitle("Performance Evaluation of Linear SVM")
 ```
 
 ## 6. Performance Evaluation with the Testing Data Set
-Evidently keyword based features outperform skill based features. So only keyword based features are used to analyze the testing data set. Both item based recommendation system ([ClassifyTesting.R](https://github.com/phylliswany/LinkedInDataAnalysis/blob/master/ClassifyTesting.R)) and linear support vector machine ([TestClassifier.R](https://github.com/phylliswany/LinkedInDataAnalysis/blob/master/TestClassifier.R)) are applied to infer an individual's working industry. Following shows the result.
+Evidently keyword based features outperform skill based features. So only keyword based features are used to analyze the testing data set. Both item based recommendation system ([ClassifyTesting.R](https://github.com/phylliswany/LinkedInDataAnalysis/blob/master/ClassifyTesting.R)) and linear support vector machine ([TestClassifier.R](https://github.com/phylliswany/LinkedInDataAnalysis/blob/master/TestClassifier.R)) are applied to infer an individual's working industry. Following is the result.
 
 ```{r, echo=FALSE, cache=TRUE}
 result <- data.frame(Feature.Length=c(20, 40, 80, 160, 320, 20, 40, 80, 160, 320), Algorithm=c("IRS", "IRS", "IRS", "IRS", "IRS", "SVM","SVM", "SVM", "SVM", "SVM"), Accuracy=c(0.4242, 0.455, 0.478, 0.4866, 0.4947, 0.4689, 0.4728, 0.4622, 0.4336, 0.4176))
-ggplot(data=result, aes(x=Feature.Length, y=Accuracy, group=Algorithm, colour=Algorithm)) + geom_line() + geom_point() + xlab("Feature Length")
+ggplot(data=result, aes(x=Feature.Length, y=Accuracy, group=Algorithm, colour=Algorithm)) + geom_line() + geom_point() + xlab("Feature Length") + ggtitle("Performance Evaluation on the Testing Data Set")
 ```
 
-Though linear SVM works better in the training data set, especially when increasing the dimension of the feature vector. However, it presents overfitting problem as the performance deteriorates with the testing data set. On the other hand, item based recommendation system  presents stability across both the training data set and the testing data set. Moreover, the performance increases with the increased dimension of the feature vector and is expected to perform better with a longer feature vector. One explanation here is a short feature vector may fail to include the keywords included in an individual's profile. Therefore, the longer the feature vetor, the larger the possibility that an individual's keywords will be included.  
+Though linear SVM works better in the training data set, especially when increasing the dimension of the feature vector. However, it presents overfitting problem as the performance deteriorates with the testing data set. On the other hand, item based recommendation system  presents stability across both the training data set and the testing data set. Moreover, the performance increases with the increased dimension of the feature vector and is expected to perform better with a longer feature vector. One explanation here is a short feature vector may fail to include the keywords included in an individual's profile. Therefore, the longer the feature vetor, the larger the possibility that an individual's keywords will be included. The following figure shows the relationship between the dimension of the feature vector versus the number of unknown predictions. 
+
 ```{r, include=FALSE, cache=TRUE}
 library(caret)
 ```
@@ -195,7 +198,7 @@ result <- data.frame(Feature.Length=c(20, 40, 80, 160, 320), Freq=data)
 ggplot(data=result, aes(x=Feature.Length, y=Freq, colour="red")) + geom_line() + geom_point() + xlab("Feature Length") + guides(colour=FALSE) + ggtitle("Number of Unknown Cases")
 ```
 
-However the number of unknown cases increases a little bit when the dimension of the feature vector increases from 160 to 320. It is because more common words are removed in this case. But since the accuracy is still increasing, we still like longer feature vectors.
+However the number of unknown cases increases a little bit when the dimension of the feature vector increases from 160 to 320. It is because more common words are removed. But since the accuracy is still increasing, we still like longer feature vectors.
 
 ## 7. Industry Group
 The accuracy of 0.4832 of item based reconmmendation system with 320 keywords describing each industry is not satisfying. To diagnose the problem, we plot the confusion matrix of the classification result.
@@ -209,7 +212,24 @@ result$truth <- droplevels(result$truth)
 levels(result$truth) <- c(levels(result$truth), "Unknown")
 x <- confusionMatrix(result$prediction, result$truth)
 y <- as.data.frame(x$table)
-ggplot(y) + geom_tile(aes(x=Reference, y=Prediction, fill=Freq)) + theme(axis.text.x = element_text(angle = 45, hjust=1))
+ggplot(y) + geom_tile(aes(x=Reference, y=Prediction, fill=Freq)) + theme(axis.text.x = element_text(angle = 45, hjust=1)) + ggtitle("Classifcation Result on the Testing Data Set")
 ```
 
-Here we want all the bright colors to concentrate around the diagonal. But we observe some bright squares off the diagonal. For example, "banking"" has a relatively large proportion to be classified as "financial services". This makes a lot of sense as these two areas require quite similar skills and people from one industry will be easily switched to the other. Another example is between "computer software" and "information technology and services". In a job recommendation system, we want to give users more options. So listing all the job opportunities in the industries matching an individual's skills is actually wanted. Therefore, we want to first group the industries. The code in   
+Here we want all the bright colors to concentrate around the diagonal. But we observe some bright squares off the diagonal. For example, "Banking"" has a relatively large proportion to be classified as "Financial Services". This makes sense as these two areas require quite similar skills and people from one industry will be easily switched to the other. Another example is between "Computer Software" and "Information Technology and Services". In a job recommendation system, we want to give users more options. So listing all the job opportunities in the industries matching an individual's skills is actually wanted. Therefore, we want to first group the industries. The code in [GroupIndustry.R](https://github.com/phylliswany/LinkedInDataAnalysis/blob/master/GroupIndustry.R) groups the 20 industries into 17 groups. Following is the dandrogram of the industries based on the distance of feature vectors between any two industries.
+
+```{r, include=FALSE, cache=TRUE}
+library(sparcl)
+```
+```{r, echo=FALSE, cache=TRUE}
+file_name <- "/Users/yanwang/Desktop/LinkedinData/IndustryAnlysis/industrygroup.Rda"
+load(file=file_name)
+y <- cutree(hc, k=17)
+ColorDendrogram(hc, y = y, labels = names(y), branchlength=1, xlab="", main="Industry Group")
+```
+
+Here "Banking" and "Financial Services", "Computer Software" and "Information Techonology and Services", "Educational Management" and "Higher Education" are grouped together. With the industry groups, the classification accuracy is recalculted and a little improvement can be observed in the following figure.
+
+```{r, echo=FALSE, cache=TRUE}
+result <- data.frame(Feature.Length=c(20, 40, 80, 160, 320), Feature=c("Keyword","Keyword", "Keyword", "Keyword", "Keyword"), Accuracy=c(0.4658, 0.4942, 0.5137, 0.525, 0.531))
+ggplot(data=result, aes(x=Feature.Length, y=Accuracy, colour="red")) + geom_line() + geom_point() + xlab("Feature Length") + guides(colour=FALSE) + ggtitle("Classification Result with Industry Groups")
+```

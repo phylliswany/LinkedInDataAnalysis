@@ -16,7 +16,7 @@ ColorDendrogram(hc, y = y, labels = names(y), branchlength=0.05, xlab="Industry"
 
 # save the tree
 file_name <- "/Users/yanwang/Desktop/LinkedinData/IndustryAnlysis/industrygroup.Rda"
-save(y, file=file_name)
+save(hc, file=file_name)
 
 # convert the data group into a data frame
 z <- data.frame(industry=names(y), value=y)
